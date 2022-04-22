@@ -13,9 +13,8 @@ void readTable(std::string path, int my_rank, int world_size,
     csvstream csvin(path);
 
     std::string prefix = sjoin("[ Rank ", my_rank, " ]: ");
-    // Rows have key = column name, value = cell datum
     std::map<std::string, std::string> row;
-    
+
     std::vector<size_t> vec_AllBytes;
     std::vector<int> vec_AllRanksA;
     std::vector<int> vec_AllRanksB;
@@ -45,7 +44,8 @@ void readTable(std::string path, int my_rank, int world_size,
 
 
     if(world_size != (max_rank + 1)){
-        printLine(prefix, "communicationTable.csv requires this application to be run with ", max_rank + 1," processes.");
+        printLine(prefix, "communicationTable.csv requires this application to be run with ", 
+                max_rank + 1," processes.");
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
 
@@ -57,18 +57,18 @@ void readTable(std::string path, int my_rank, int world_size,
         if (entry == my_rank) vec_myIndices.push_back(index);
         index++;
     }
-    
+
     index = 0;
     for (auto& entry : vec_AllRanksB)
     {
         if (entry == my_rank) vec_myIndices.push_back(index);
         index++;
     }
-    
+
     sort(vec_myIndices.begin(), vec_myIndices.end());
-    
+
     for(auto& i : vec_myIndices){
-    
+
         vec_Bytes.push_back(vec_AllBytes[i]);
 
         if(vec_AllRanksA[i] == my_rank){

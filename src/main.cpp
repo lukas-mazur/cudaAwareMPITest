@@ -11,7 +11,7 @@
 #include <numeric>
 
 
-
+template<MemoryType memtype>
 void performCommunication(int my_rank, 
         std::vector<size_t> &vec_Bytes, 
         std::vector<int> &vec_SendRanks,
@@ -22,8 +22,6 @@ void performCommunication(int my_rank,
     size_t sumOfBytes = 0;
     for(auto& bytes : vec_Bytes) sumOfBytes += bytes;
     
-    constexpr MemoryType memtype = host;
-
     SimpleMemory<memtype> SendBuffer(sumOfBytes);
     SimpleMemory<memtype> RecvBuffer(sumOfBytes);
 
@@ -33,6 +31,7 @@ void performCommunication(int my_rank,
 
     SendRequests.resize(vec_Bytes.size());
     RecvRequests.resize(vec_Bytes.size());
+
 
     printLine(prefix,"Start communication...");
     size_t offset = 0;
@@ -51,11 +50,9 @@ void performCommunication(int my_rank,
                                                 MPI_COMM_WORLD, &RecvRequests[i]);
         offset += vec_Bytes[i];
     }
-    printLine(prefix,"MPI_Waitall...");
     MPI_Waitall(vec_Bytes.size(), &RecvRequests[0], MPI_STATUS_IGNORE);
     MPI_Waitall(vec_Bytes.size(), &SendRequests[0], MPI_STATUS_IGNORE);
 
-    printLine(prefix,"MPI_Request_free...");
     for(auto& req : SendRequests){
         if ((req != MPI_REQUEST_NULL) && (req != 0)) {
             MPI_Request_free(&req);
@@ -76,6 +73,7 @@ int main(int argc, char* argv[])
 {
     MPI_Init(&argc, &argv);
 
+
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
@@ -83,22 +81,24 @@ int main(int argc, char* argv[])
 
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
+    std::string prefix = sjoin("[ Rank ", my_rank, " ]: ");
+    for (int i = 0; i < argc; ++i)
+        printLine(prefix,"arg=",i," -> ",argv[i]);
+    
+    if(argc != 2) {
+        printLine(prefix, "Please specify the path to a communication csv table!\n",
+            prefix, "Usage: mpiexec -n <ProcessCount> ./cudaAwareMPITest <PathToCommunicationTable>");
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    }
 
     std::vector<size_t> vec_Bytes;
     std::vector<int> vec_SendRanks;
     std::vector<int> vec_RecvRanks;
     
-    std::string path = "communicationTable.csv";
+    std::string path = argv[1];
     readTable(path, my_rank, world_size, vec_Bytes, vec_SendRanks, vec_RecvRanks);
     
- //   std::string prefix = sjoin("[ Rank ", my_rank, " ]: ");
- //   for(int i = 0; i < vec_Bytes.size(); i++)
- //   {
- //       printLine(prefix, vec_Bytes[i], ",", vec_SendRanks[i], ",", vec_RecvRanks[i]);
- //   }
-
- //   printLine("==========================================\n");
-    performCommunication(my_rank, vec_Bytes, vec_SendRanks, vec_RecvRanks);
+    performCommunication<host>(my_rank, vec_Bytes, vec_SendRanks, vec_RecvRanks);
 
     MPI_Finalize();
 
