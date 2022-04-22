@@ -38,9 +38,12 @@ void performCommunication(int my_rank,
     size_t offset = 0;
     for(int i = 0; i < vec_Bytes.size(); i++)
     {
+        
+        printLine(prefix, "Send ", vec_Bytes[i],
+                                 " bytes from rank ", vec_SendRanks[i], " to rank ", vec_RecvRanks[i]);
 
         MPI_Isend(SendBuffer.getPtr() + offset, vec_Bytes[i], MPI_CHAR, 
-                                                vec_RecvRanks[i], my_rank, 
+                                                vec_RecvRanks[i], vec_SendRanks[i], 
                                                 MPI_COMM_WORLD, &SendRequests[i]);
 
         MPI_Irecv(RecvBuffer.getPtr() + offset, vec_Bytes[i], MPI_CHAR, 
@@ -68,16 +71,14 @@ void performCommunication(int my_rank,
 }
 
 
+
 int main(int argc, char* argv[])
 {
     MPI_Init(&argc, &argv);
 
-    // Get the number of processes and check only 2 processes are used
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    // Get my rank and do the corresponding job
-    enum role_ranks { SENDER, RECEIVER };
     int my_rank;
 
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -90,6 +91,13 @@ int main(int argc, char* argv[])
     std::string path = "communicationTable.csv";
     readTable(path, my_rank, world_size, vec_Bytes, vec_SendRanks, vec_RecvRanks);
     
+ //   std::string prefix = sjoin("[ Rank ", my_rank, " ]: ");
+ //   for(int i = 0; i < vec_Bytes.size(); i++)
+ //   {
+ //       printLine(prefix, vec_Bytes[i], ",", vec_SendRanks[i], ",", vec_RecvRanks[i]);
+ //   }
+
+ //   printLine("==========================================\n");
     performCommunication(my_rank, vec_Bytes, vec_SendRanks, vec_RecvRanks);
 
     MPI_Finalize();
