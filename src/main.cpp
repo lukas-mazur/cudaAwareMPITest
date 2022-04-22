@@ -82,12 +82,17 @@ int main(int argc, char* argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
     std::string prefix = sjoin("[ Rank ", my_rank, " ]: ");
-    for (int i = 0; i < argc; ++i)
-        printLine(prefix,"arg=",i," -> ",argv[i]);
     
-    if(argc != 2) {
-        printLine(prefix, "Please specify the path to a communication csv table!\n",
-            prefix, "Usage: mpiexec -n <ProcessCount> ./cudaAwareMPITest <PathToCommunicationTable>");
+    if(argc != 3) {
+        if (my_rank == 0){
+            printLine("Please specify the path and onDevice!\n",
+            "Usage:\n",
+            "\t mpiexec -n <processCount> ./cudaAwareMPITest <path> <ondevice>\n\n",
+            "<processCount>\t: Number of processes.\n",
+            "<path>\t\t: Path to communication table.\n",
+            "<onDevice>\t: \"true\" or \"false\". Specify whether to communicate gpu or cpu memory.\n"
+            );
+        }
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
 
@@ -96,9 +101,22 @@ int main(int argc, char* argv[])
     std::vector<int> vec_RecvRanks;
     
     std::string path = argv[1];
+    std::string onDevice = argv[2];
     readTable(path, my_rank, world_size, vec_Bytes, vec_SendRanks, vec_RecvRanks);
     
-    performCommunication<host>(my_rank, vec_Bytes, vec_SendRanks, vec_RecvRanks);
+    if(onDevice == "false"){
+        performCommunication<host>(my_rank, vec_Bytes, vec_SendRanks, vec_RecvRanks);
+    }
+    else if(onDevice == "true"){
+        performCommunication<device>(my_rank, vec_Bytes, vec_SendRanks, vec_RecvRanks);
+    }
+    else{
+        if (my_rank == 0){
+            printLine(COLORS::red,"\"", onDevice, "\" is not allowed as <onDevice> parameter!",COLORS::reset);
+        }
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+
+    }
 
     MPI_Finalize();
 

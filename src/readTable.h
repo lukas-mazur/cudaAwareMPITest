@@ -44,8 +44,8 @@ void readTable(std::string path, int my_rank, int world_size,
 
 
     if(world_size != (max_rank + 1)){
-        printLine(prefix, "communicationTable.csv requires this application to be run with ", 
-                max_rank + 1," processes.");
+        printLine(COLORS::red,prefix, path, " requires this application to run with ", 
+                max_rank + 1," processes.",COLORS::reset);
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
 
