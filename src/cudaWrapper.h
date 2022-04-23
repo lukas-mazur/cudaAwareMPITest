@@ -40,31 +40,33 @@ enum MemoryType { device, host, hostPinned };
 template <MemoryType memType = host, typename dtype = char> 
 class SimpleMemory {
     private:
-
-    public:
         dtype *_buffer;
         size_t _size;
+        std::string _prefix;
+
+    public:
 
 
-        SimpleMemory(size_t size) {
+        SimpleMemory(size_t size, std::string prefix = "") {
             _size = size;
+            _prefix = prefix;
             if(_size != 0) {
                 switch(memType) {
                     case device:
-                        printFormat("Allocating %zu bytes on device", size);
+                        printLine(_prefix, "Allocating ", _size, " bytes on device");
                         checkCudaErrors(cudaMalloc((void**)&_buffer, size));
                         break;
 
                     case hostPinned:
-                        printFormat("Allocating %zu bytes on host (pinned)", size);
+                        printLine(_prefix, "Allocating ", _size, " bytes on host (pinned)");
                         checkCudaErrors(cudaMallocHost((void**)&_buffer, size));
                         break;
 
                     case host:
-                        printFormat("Allocating %zu bytes on host", size);
+                        printLine(_prefix, "Allocating ", _size, " bytes on host");
                         _buffer = static_cast<dtype *>(std::malloc(size));
                         if (_buffer == NULL) {
-                            printFormat("Error creating host buffer!");
+                            printLine(_prefix, "Error creating host buffer!");
                             exit(EXIT_FAILURE);
                         }
                         break;
@@ -76,15 +78,15 @@ class SimpleMemory {
             if(_size != 0) {
                 switch(memType) {
                         case device:
-                            printLine("Free device memory");
+                            printLine(_prefix, "Free device memory");
                             checkCudaErrors(cudaFree(_buffer));
                             break;
                         case hostPinned:
-                            printLine("Free pinned host memory");
+                            printLine(_prefix, "Free pinned host memory");
                             checkCudaErrors(cudaFreeHost(_buffer));
                             break;
                         case host:
-                            printLine("Free host memory");
+                            printLine(_prefix, "Free host memory");
                             std::free(_buffer);
                             break;
                     }

@@ -22,8 +22,8 @@ void performCommunication(int my_rank,
     size_t sumOfBytes = 0;
     for(auto& bytes : vec_Bytes) sumOfBytes += bytes;
     
-    SimpleMemory<memtype> SendBuffer(sumOfBytes);
-    SimpleMemory<memtype> RecvBuffer(sumOfBytes);
+    SimpleMemory<memtype> SendBuffer(sumOfBytes, prefix);
+    SimpleMemory<memtype> RecvBuffer(sumOfBytes, prefix);
 
     
     std::vector<MPI_Request> SendRequests;
@@ -33,7 +33,6 @@ void performCommunication(int my_rank,
     RecvRequests.resize(vec_Bytes.size());
 
 
-    printLine(prefix,"Start communication...");
     size_t offset = 0;
     for(int i = 0; i < vec_Bytes.size(); i++)
     {
@@ -64,7 +63,7 @@ void performCommunication(int my_rank,
         }
     }
 
-    printLine(prefix,"Communication done!");
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 
