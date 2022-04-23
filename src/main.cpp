@@ -54,6 +54,7 @@ void performCommunication(int my_rank,
     RecvRequests.resize(vec_Bytes.size());
 
 
+    MPI_Barrier(MPI_COMM_WORLD);
     printLine(prefix,"Start communication...");
     offset = 0;
     for(int i = 0; i < vec_Bytes.size(); i++)
@@ -85,7 +86,7 @@ void performCommunication(int my_rank,
         }
     }
 
-
+    MPI_Barrier(MPI_COMM_WORLD);
     printLine(prefix,"Check transfered values...");
     
     SimpleMemory<host> RecvBufferCheck(sumOfBytes, prefix); 
@@ -109,7 +110,6 @@ void performCommunication(int my_rank,
         printLine(COLORS::green,prefix, "Communication was successful!",COLORS::reset);
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
 }
 
 
