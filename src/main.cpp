@@ -88,12 +88,16 @@ void performCommunication(int my_rank,
 
     printLine(prefix,"Check transfered values...");
     
+    SimpleMemory<host> RecvBufferCheck(sumOfBytes, prefix); 
+    copyMemory(RecvBuffer,RecvBufferCheck);
+
+
     offset = 0;
     int res = 0;
     for(int i = 0; i < vec_Bytes.size(); i++)
     {
         std::vector<char> random_values = generate_data<char>(vec_Bytes[i],vec_Tags[i]);
-        res = std::memcmp(RecvBuffer.getPtr() + offset, &random_values[0], vec_Bytes[i]);
+        res = std::memcmp(RecvBufferCheck.getPtr() + offset, &random_values[0], vec_Bytes[i]);
         if(res != 0) break;
         offset += vec_Bytes[i];
     }

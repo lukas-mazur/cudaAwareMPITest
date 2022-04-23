@@ -113,15 +113,21 @@ class SimpleMemory {
                 checkCudaErrors(cudaMemcpy(_buffer+offset, data, size, cudaMemcpyHostToDevice));
             }
         }
+
 };
 
 
 template <MemoryType memType1, MemoryType memType2, typename dtype>
-inline cudaError_t copyMemory(SimpleMemory<memType1, dtype> &src,
+inline void copyMemory(SimpleMemory<memType1, dtype> &src,
         SimpleMemory<memType2, dtype> &dst) {
 
-    cudaMemcpyKind kind;
+    if ((memType1 == host || memType1 == hostPinned) &&
+             (memType2 == host || memType2 == hostPinned)){
+        std::memcpy(dst.getPtr(), src.getPtr(), src.getSize());
+        return;
+    }
 
+    cudaMemcpyKind kind;
     if (memType1 == device && memType2 == device){
         kind = cudaMemcpyDeviceToDevice;
     }
@@ -131,16 +137,12 @@ inline cudaError_t copyMemory(SimpleMemory<memType1, dtype> &src,
     else if ((memType1 == host || memType1 == hostPinned) && memType2 == device){
         kind = cudaMemcpyHostToDevice;
     }
-    else if ((memType1 == host || memType1 == hostPinned) &&
-             (memType2 == host || memType2 == hostPinned)){
-        kind = cudaMemcpyHostToHost;
-    }
 
     if (src.getSize() != dst.getSize()){
         printLine("Error! Memcpy: src.getSize() != dst.getSize()");
         exit(EXIT_FAILURE);
     }
-    return cudaMemcpy(dst.getPtr(), src.getPtr(), src.getSize(), kind);
+    checkCudaErrors(cudaMemcpy(dst.getPtr(), src.getPtr(), src.getSize(), kind));
 }
 
 #endif
