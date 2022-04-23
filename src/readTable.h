@@ -1,4 +1,7 @@
 
+#ifndef READTABLE_H
+#define READTABLE_H
+
 #include "csvstream.h"
 #include "stringFunctions.h"
 #include <mpi.h>
@@ -85,3 +88,5 @@ void readTable(std::string path, int my_rank, int world_size,
         }
     }
 }
+
+#endif
