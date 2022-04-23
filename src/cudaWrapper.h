@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <cstdlib>
 #include <cmath>
+#include <random>
+#include <limits>
+#include <vector>
 #include "stringFunctions.h"
 
 template <typename T>
@@ -96,6 +99,20 @@ class SimpleMemory {
         dtype *getPtr() { return _buffer; }
 
         size_t getSize() { return _size; }
+
+        void insert(dtype* data, size_t offset, size_t size){
+            if(offset + size > _size){
+                printLine(COLORS::red, _prefix, "Error! SimpleMemory<dtype>::insert(..), offset+size exceeds array boundary!", COLORS::reset);
+                exit(-1);
+            }
+
+            if(memType == host || memType == hostPinned) {
+                std::memcpy(_buffer+offset, data, size);
+            }
+            else {
+                checkCudaErrors(cudaMemcpy(_buffer+offset, data, size, cudaMemcpyHostToDevice));
+            }
+        }
 };
 
 

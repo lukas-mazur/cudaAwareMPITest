@@ -10,6 +10,18 @@
 #include <map>
 #include <numeric>
 
+template<typename value_type>
+std::vector<value_type> generate_data(size_t size, int seed)
+{
+    std::mt19937 generator(seed); 
+    std::uniform_int_distribution<value_type> distribution(
+        std::numeric_limits<value_type>::min(),
+        std::numeric_limits<value_type>::max());
+
+    std::vector<value_type> data(size);
+    std::generate(data.begin(), data.end(), [&]() { return distribution(generator); });
+    return data;
+}
 
 template<MemoryType memtype>
 void performCommunication(int my_rank, 
@@ -24,8 +36,17 @@ void performCommunication(int my_rank,
     
     SimpleMemory<memtype> SendBuffer(sumOfBytes, prefix);
     SimpleMemory<memtype> RecvBuffer(sumOfBytes, prefix);
-
     
+    
+    printLine(prefix,"Generate random values...");
+    size_t offset = 0;
+    for(int i = 0; i < vec_Bytes.size(); i++)
+    {
+        std::vector<char> random_values = generate_data<char>(vec_Bytes[i],vec_Tags[i]);
+        SendBuffer.insert(&random_values[0],offset,vec_Bytes[i]);
+        offset += vec_Bytes[i];
+    }
+
     std::vector<MPI_Request> SendRequests;
     std::vector<MPI_Request> RecvRequests;
 
@@ -33,7 +54,8 @@ void performCommunication(int my_rank,
     RecvRequests.resize(vec_Bytes.size());
 
 
-    size_t offset = 0;
+    printLine(prefix,"Start communication...");
+    offset = 0;
     for(int i = 0; i < vec_Bytes.size(); i++)
     {
         
@@ -61,6 +83,26 @@ void performCommunication(int my_rank,
         if ((req != MPI_REQUEST_NULL) && (req != 0)) {
             MPI_Request_free(&req);
         }
+    }
+
+
+    printLine(prefix,"Check transfered values...");
+    
+    offset = 0;
+    int res = 0;
+    for(int i = 0; i < vec_Bytes.size(); i++)
+    {
+        std::vector<char> random_values = generate_data<char>(vec_Bytes[i],vec_Tags[i]);
+        res = std::memcmp(RecvBuffer.getPtr() + offset, &random_values[0], vec_Bytes[i]);
+        if(res != 0) break;
+        offset += vec_Bytes[i];
+    }
+
+    if(res != 0){
+        printLine(COLORS::red,prefix, "Error! Transfered buffers are wrong!",COLORS::reset);
+    }
+    else{
+        printLine(COLORS::green,prefix, "Communication was successful!",COLORS::reset);
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
