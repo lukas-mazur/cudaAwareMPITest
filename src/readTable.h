@@ -6,8 +6,8 @@
 
 void readTable(std::string path, int my_rank, int world_size,
         std::vector<size_t> &vec_Bytes, 
-        std::vector<int> &vec_SendRanks,
-        std::vector<int> &vec_RecvRanks)
+        std::vector<int> &vec_RecvRanks,
+        std::vector<int> &vec_Tags)
 {
 
     csvstream csvin(path);
@@ -18,7 +18,9 @@ void readTable(std::string path, int my_rank, int world_size,
     std::vector<size_t> vec_AllBytes;
     std::vector<int> vec_AllRanksA;
     std::vector<int> vec_AllRanksB;
+    std::vector<int> vec_AllTags;
 
+    int tag = 0;
     // Read communication table
     while (csvin >> row) {
         std::stringstream sstream_Bytes(row["Bytes"]);
@@ -26,15 +28,18 @@ void readTable(std::string path, int my_rank, int world_size,
         sstream_Bytes >> result_Bytes;
         vec_AllBytes.push_back(result_Bytes);
 
-        std::stringstream sstream_SendRank(row["RankA"]);
-        int result_SendRank;
-        sstream_SendRank >> result_SendRank;
-        vec_AllRanksA.push_back(result_SendRank);
+        std::stringstream sstream_RankA(row["RankA"]);
+        int result_RankA;
+        sstream_RankA >> result_RankA;
+        vec_AllRanksA.push_back(result_RankA);
 
-        std::stringstream sstream_RecvRank(row["RankB"]);
-        int result_RecvRank;
-        sstream_RecvRank >> result_RecvRank;
-        vec_AllRanksB.push_back(result_RecvRank);
+        std::stringstream sstream_RankB(row["RankB"]);
+        int result_RankB;
+        sstream_RankB >> result_RankB;
+        vec_AllRanksB.push_back(result_RankB);
+
+        vec_AllTags.push_back(tag);
+        tag++;
     }
 
     std::vector<size_t> vec_tmp;
@@ -70,13 +75,12 @@ void readTable(std::string path, int my_rank, int world_size,
     for(auto& i : vec_myIndices){
 
         vec_Bytes.push_back(vec_AllBytes[i]);
+        vec_Tags.push_back(vec_AllTags[i]);
 
         if(vec_AllRanksA[i] == my_rank){
-            vec_SendRanks.push_back(vec_AllRanksA[i]);
             vec_RecvRanks.push_back(vec_AllRanksB[i]);
         }
         else{
-            vec_SendRanks.push_back(vec_AllRanksB[i]);
             vec_RecvRanks.push_back(vec_AllRanksA[i]);
         }
     }

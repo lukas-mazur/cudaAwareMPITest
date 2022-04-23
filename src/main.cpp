@@ -14,8 +14,8 @@
 template<MemoryType memtype>
 void performCommunication(int my_rank, 
         std::vector<size_t> &vec_Bytes, 
-        std::vector<int> &vec_SendRanks,
-        std::vector<int> &vec_RecvRanks){
+        std::vector<int> &vec_RecvRanks,
+        std::vector<int> &vec_Tags){
 
     std::string prefix = sjoin("[ Rank ", my_rank, " ]: ");
 
@@ -38,15 +38,15 @@ void performCommunication(int my_rank,
     for(int i = 0; i < vec_Bytes.size(); i++)
     {
         
-        printLine(prefix, "Send ", vec_Bytes[i],
-                                 " bytes from rank ", vec_SendRanks[i], " to rank ", vec_RecvRanks[i]);
+        printLine(prefix, "Send ", vec_Bytes[i], " bytes from rank ", my_rank, 
+                " to rank ", vec_RecvRanks[i], " with tag ", vec_Tags[i]);
 
         MPI_Isend(SendBuffer.getPtr() + offset, vec_Bytes[i], MPI_CHAR, 
-                                                vec_RecvRanks[i], vec_SendRanks[i], 
+                                                vec_RecvRanks[i], vec_Tags[i], 
                                                 MPI_COMM_WORLD, &SendRequests[i]);
 
         MPI_Irecv(RecvBuffer.getPtr() + offset, vec_Bytes[i], MPI_CHAR, 
-                                                vec_RecvRanks[i], vec_RecvRanks[i], 
+                                                vec_RecvRanks[i], vec_Tags[i], 
                                                 MPI_COMM_WORLD, &RecvRequests[i]);
         offset += vec_Bytes[i];
     }
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
         if (my_rank == 0){
             printLine("Please specify the path and onDevice!\n",
             "Usage:\n",
-            "\t mpiexec -n <processCount> ./cudaAwareMPITest <path> <ondevice>\n\n",
+            "\t mpiexec -n <processCount> ./cudaAwareMPITest <path> <onDevice>\n\n",
             "<processCount>\t: Number of processes.\n",
             "<path>\t\t: Path to communication table.\n",
             "<onDevice>\t: \"true\" or \"false\". Specify whether to communicate gpu or cpu memory.\n"
@@ -97,18 +97,19 @@ int main(int argc, char* argv[])
     }
 
     std::vector<size_t> vec_Bytes;
-    std::vector<int> vec_SendRanks;
+    std::vector<int> vec_Tags;
     std::vector<int> vec_RecvRanks;
     
     std::string path = argv[1];
     std::string onDevice = argv[2];
-    readTable(path, my_rank, world_size, vec_Bytes, vec_SendRanks, vec_RecvRanks);
+    readTable(path, my_rank, world_size, vec_Bytes, vec_RecvRanks, vec_Tags);
     
+
     if(onDevice == "false"){
-        performCommunication<host>(my_rank, vec_Bytes, vec_SendRanks, vec_RecvRanks);
+        performCommunication<host>(my_rank, vec_Bytes, vec_RecvRanks, vec_Tags);
     }
     else if(onDevice == "true"){
-        performCommunication<device>(my_rank, vec_Bytes, vec_SendRanks, vec_RecvRanks);
+        performCommunication<device>(my_rank, vec_Bytes, vec_RecvRanks, vec_Tags);
     }
     else{
         if (my_rank == 0){
