@@ -34,7 +34,7 @@ where you need to specify:
 
 ## Creating a communication table
 
-Each row in a table describes a bi-directional communication call. The first column is the number of bytes which should be send, while the second and third columns are the ranks which are communicating.
+Each row in the table describes a bi-directional communication call. The first column is the number of bytes which should be transfered, while the second and third columns are the ranks which are communicating.
 
 In the example below two bi-directional communication calls will be performed. The first call communicates 123 Bytes between rank 0 and 1, while the second call communicates 12345 Bytes between rank 0 and 2.
 ```
