@@ -29,7 +29,7 @@ where you need to specify:
 ```
 <processCount>  : Number of processes.
 <path>          : Path to communication table. Some examples are available in the sub-folder communicationTables/.
-<onDevice>      : "true" or "false". Specify whether to communicate gpu or cpu memory.
+<onDevice>      : Set it to "true" in order to communicate gpu memory. Set it to "false" in order to communicate cpu memory.
 ```
 
 ## Creating a communication table
