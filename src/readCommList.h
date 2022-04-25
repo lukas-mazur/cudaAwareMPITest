@@ -1,13 +1,13 @@
 
-#ifndef READTABLE_H
-#define READTABLE_H
+#ifndef READCOMMLIST_H
+#define READCOMMLIST_H
 
 #include "csvstream.h"
 #include "stringFunctions.h"
 #include <mpi.h>
 
 
-void readTable(std::string path, int my_rank, int world_size,
+void readCommList(std::string path, int my_rank, int world_size,
         std::vector<size_t> &vec_Bytes, 
         std::vector<int> &vec_RecvRanks,
         std::vector<int> &vec_Tags)
@@ -24,7 +24,7 @@ void readTable(std::string path, int my_rank, int world_size,
     std::vector<int> vec_AllTags;
 
     int tag = 0;
-    // Read communication table
+    // Read communication list
     while (csvin >> row) {
         std::stringstream sstream_Bytes(row["Bytes"]);
         size_t result_Bytes;

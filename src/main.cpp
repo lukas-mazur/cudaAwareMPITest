@@ -1,4 +1,4 @@
-#include "readTable.h"
+#include "readCommList.h"
 #include "stringFunctions.h"
 #include "cudaWrapper.h"
 #include <stdio.h>
@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
             "Usage:\n",
             "\t mpiexec -n <processCount> ./cudaAwareMPITest <path> <onDevice>\n\n",
             "<processCount>\t: Number of processes.\n",
-            "<path>\t\t: Path to communication table.\n",
+            "<path>\t\t: Path to communication list.\n",
             "<onDevice>\t: \"true\" or \"false\". Specify whether to communicate gpu or cpu memory.\n"
             );
         }
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
     
     std::string path = argv[1];
     std::string onDevice = argv[2];
-    readTable(path, my_rank, world_size, vec_Bytes, vec_RecvRanks, vec_Tags);
+    readCommList(path, my_rank, world_size, vec_Bytes, vec_RecvRanks, vec_Tags);
     
 
     if(onDevice == "false"){

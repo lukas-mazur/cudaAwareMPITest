@@ -28,13 +28,13 @@ mpiexec -n <processCount> ./cudaAwareMPITest <path> <onDevice>
 where you need to specify:
 ```
 <processCount>  : Number of processes.
-<path>          : Path to communication table. Some examples are available in the sub-folder communicationTables/.
+<path>          : Path to communication list. Some examples are available in the sub-folder communicationLists/.
 <onDevice>      : Set it to "true" in order to communicate gpu memory. Set it to "false" in order to communicate cpu memory.
 ```
 
-## Creating a communication table
+## Creating a communication list
 
-Each row in the table describes a bidirectional communication call. The first column is the number of bytes which should be transfered, while the second and third columns are the ranks which are communicating.
+Each row in the list describes a bidirectional communication call. The first column is the number of bytes which should be transfered, while the second and third columns are the ranks which are communicating.
 
 In the example below two bidirectional communication calls will be performed. The first call communicates 123 Bytes between rank 0 and 1, while the second call communicates 12345 Bytes between rank 0 and 2.
 ```
@@ -43,4 +43,4 @@ Bytes,RankA,RankB
 12345,0,2
 ```
 
-Some more examples are available in the sub-folder `communicationTables/`.
+Some more examples are available in the sub-folder `communicationLists/`.
