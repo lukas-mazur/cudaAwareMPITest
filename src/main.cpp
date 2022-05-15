@@ -102,7 +102,9 @@ void performCommunication(int my_rank,
         if(res != 0) break;
         offset += vec_Bytes[i];
     }
-
+    
+    MPI_Barrier(MPI_COMM_WORLD);
+    
     if(res != 0){
         printLine(COLORS::red,prefix, "Error! Transfered buffers are wrong!",COLORS::reset);
     }
